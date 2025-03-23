@@ -153,6 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Weather-based recommendations
         switch (weatherData.condition) {
             case 'clear':
+
             case 'sunny':
                 recommendations.push({
                     name: 'Sunscreen',
@@ -172,8 +173,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
                 
             case 'rain':
+                recommendations.push({
+                    name: 'Stay at home',
+                    reason: 'Don\'t get yourself wet',
+                    icon: '🏠'
+                });
+                recommendations.push({
+                    name: 'Umbrella',
+                    reason: 'Stay dry in the rain',
+                    icon: '☔'
+                });
+                recommendations.push({
+                    name: 'Waterproof jacket',
+                    reason: 'Essential for rainy weather',
+                    icon: '🧥'
+                });
+                recommendations.push({
+                    name: 'Waterproof shoes',
+                    reason: 'Keep your feet dry',
+                    icon: '👟'
+                });
+                break;
+                break;
             case 'drizzle':
             case 'thunderstorm':
+                recommendations.push({
+                    name: 'Stay at home',
+                    reason: 'Don\'t get yourself in danger',
+                    icon: '🏠'
+                });
                 recommendations.push({
                     name: 'Umbrella',
                     reason: 'Stay dry in the rain',
@@ -206,6 +234,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
                 
             case 'snow':
+                recommendations.push({
+                    name: 'Jacket',
+                    reason: 'Stay warm',
+                    icon: '🧥'
+                });
+                recommendations.push({
+                    name: 'Gloves',
+                    reason: 'Stay warm',
+                    icon: '🧤'
+                });
+                recommendations.push({
+                    name: 'Hat and scarf',
+                    reason: 'Essential for cold weather',
+                    icon: '🧣'
+                });
+                break;
             case 'snowy':
                 recommendations.push({
                     name: 'Winter coat',
