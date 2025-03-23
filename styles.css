@@ -1,0 +1,211 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #f5f5f5;
+    color: #333;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 20px 0;
+    border-bottom: 1px solid #ddd;
+    position: relative;
+}
+
+header h1 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.user-info {
+    margin-top: 15px;
+    font-size: 14px;
+    color: #555;
+}
+
+.logout-btn {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    font-size: 12px;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: background-color 0.3s;
+}
+
+.logout-btn:hover {
+    background-color: #c0392b;
+}
+
+section {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+input, select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #2980b9;
+}
+
+.location-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.primary-btn {
+    background-color: #3498db;
+    flex: 1;
+}
+
+.secondary-btn {
+    background-color: #95a5a6;
+    flex: 1;
+}
+
+.secondary-btn:hover {
+    background-color: #7f8c8d;
+}
+
+.location-displays {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#home-location-display, #current-location-display, #distance-from-home {
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+#home-location-display {
+    border-left: 4px solid #3498db;
+}
+
+#current-location-display {
+    border-left: 4px solid #27ae60;
+}
+
+#distance-from-home {
+    background-color: #e8f4f8;
+    border-left: 4px solid #9b59b6;
+}
+
+#location-status {
+    margin-bottom: 15px;
+    padding: 8px;
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: #f0f9ff;
+    color: #2980b9;
+}
+
+ul {
+    list-style-type: none;
+}
+
+li {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+li:last-child {
+    border-bottom: none;
+}
+
+.delete-btn {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.delete-btn:hover {
+    background-color: #c0392b;
+}
+
+.weather-info {
+    padding: 15px;
+    background-color: #f9f9f9;
+}
+
+.recommendation-item {
+    background-color: #e8f4f8;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 4px;
+    border-left: 4px solid #3498db;
+}
+
+@media (max-width: 600px) {
+    .container {
+        padding: 10px;
+    }
+    
+    button {
+        width: 100%;
+    }
+    
+    .location-buttons {
+        flex-direction: column;
+    }
+} 

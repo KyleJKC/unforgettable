@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Contact us</title>
+    <h1>Having an Unforgettable Issue?</h1>
+</head>
+<body>
+<form onsubmit="return handleContactSubmit()">
+    <label for="email">Your Email:</label><br>
+    <input type="email" id="email" required><br><br>
+
+    <label for="message">Please feel free to write anything you would like us to improve on.</label><br>
+    <textarea id="message" rows="6" cols="40" required></textarea><br><br>
+
+    <button type="submit">Send</button>
+</form>
+
+<p id="contact-result" style="color: green;"></p>
+
+<p><a href="index.html">Back to home</a></p>
+
+</body>
+<script>
+    function handleContactSubmit(){
+        const email = document.getElementById("email").value;
+        const message = document.getElementById("message").value;
+        if (email != null && message != null){
+            console.log("We have received your response. Thank you!")
+        } else if (email === null){ //加上检测email是否valid
+            console.log("Please type in a valid email.")
+        } else if (message === null) {
+            console.log("Seems like you don't have concerns.")
+        }
+
+
+    }
+</script>
+</html>

@@ -1,0 +1,81 @@
+.login-section, .signup-section, .register-section {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.auth-links {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.auth-links a {
+    color: #3498db;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.auth-links a:hover {
+    text-decoration: underline;
+}
+
+.auth-links p {
+    margin: 8px 0;
+}
+
+.login-section h2, .signup-section h2, .register-section h2 {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+#login-form, #signup-form, #register-form {
+    padding: 10px;
+}
+
+.primary-btn {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.error-message {
+    color: #e74c3c;
+    font-size: 14px;
+    margin-top: 5px;
+    text-align: center;
+    display: none;
+}
+
+.success-message {
+    color: #27ae60;
+    font-size: 14px;
+    margin-top: 5px;
+    text-align: center;
+    display: none;
+}
+
+input[type="email"],
+input[type="password"],
+input[type="text"] {
+    transition: border-color 0.3s;
+}
+
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="text"]:focus {
+    border-color: #3498db;
+    outline: none;
+}
+
+.forgot-password-section {
+    display: none;
+}
+
+/* Animation for switching between login and signup */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.login-section, .signup-section, .register-section {
+    animation: fadeIn 0.3s ease-in-out;
+} 
