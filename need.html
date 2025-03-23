@@ -2,14 +2,68 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>What Do You need?</title>
-    <h1>What Do You need?</h1>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNFORGETTABLE - What Do You Need?</title>
+    <link rel="stylesheet" href="../styles.css">
 </head>
 <body>
-<h2>When you want to travel to a different city, type your destination in our website, and you will know what to prepare.</h2>
-<h3>Your Location is...</h3>
-<h3>Please enter your destination city</h3>
-<!--输出推荐出行方式以及推荐携带物品，也可以输出是否有时差，并制定一个倒时差的方案-->
+    <div class="container">
+        <header>
+            <h1>UNFORGETTABLE</h1>
+            <nav>
+                <a href="../index.html">Home</a>
+                <a href="need.html">Traveling?</a>
+            </nav>
+            <p>Never forget your essentials again</p>
+        </header>
 
+        <section class="need-section">
+            <h2>What Do You Need?</h2>
+            <p class="need-intro">When you want to travel to a different city, enter your destination below and we'll suggest what to bring.</p>
+            
+            <div id="location-status" class="need-location-status">
+                <p>Your current location: Waiting for GPS data...</p>
+            </div>
+            
+            <form id="destination-form">
+                <div class="form-group">
+                    <label for="destination-input">Enter your destination city:</label>
+                    <input type="text" id="destination-input" placeholder="e.g. San Francisco, CA" required>
+                </div>
+                <div class="form-group">
+                    <label for="trip-duration">Trip duration:</label>
+                    <select id="trip-duration">
+                        <option value="day">Day trip</option>
+                        <option value="weekend">Weekend trip</option>
+                        <option value="week">Week-long trip</option>
+                        <option value="long">Longer trip</option>
+                    </select>
+                </div>
+                <button type="submit" class="primary-btn">Get Recommendations</button>
+            </form>
+            
+            <div id="loading-recommendations" style="display: none;" class="loading-section">
+                <p>Finding recommendations for your trip...</p>
+            </div>
+            
+            <div id="recommendations-container" style="display: none;">
+                <h3>Recommended Items for <span id="destination-name">your trip</span></h3>
+                <div id="weather-info" class="weather-info-need">
+                    <p>Weather information will appear here</p>
+                </div>
+                <div id="recommendations-list" class="recommendations-list">
+                    <!-- Recommendations will be loaded here -->
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <p><a href="../contact.html">Contact Us</a></p>
+        <p>&copy; 2023 UNFORGETTABLE. All rights reserved.</p>
+        <p>Created by Alex Kang, Steve Sun, Kyle Jin</p>
+    </footer>
+
+    <script src="../need.js"></script>
 </body>
 </html>
