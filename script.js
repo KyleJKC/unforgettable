@@ -1,6 +1,9 @@
-document.addEventListener('DOMContentLoaded', () => {
+// Import Auth Service
+import AuthService from './appwrite.js';
+
+document.addEventListener('DOMContentLoaded', async () => {
     // Check login status first
-    if (!checkLoginStatus()) {
+    if (!await checkLoginStatus()) {
         return; // Don't initialize the app if not logged in
     }
 
@@ -34,50 +37,66 @@ document.addEventListener('DOMContentLoaded', () => {
     initialize();
 
     // Login check function
-    function checkLoginStatus() {
-        const isLoggedIn = localStorage.getItem('isLoggedIn');
-        
-        if (isLoggedIn !== 'true') {
-            // Redirect to login page if not logged in
+    async function checkLoginStatus() {
+        try {
+            const isLoggedIn = await AuthService.isLoggedIn();
+            
+            if (!isLoggedIn) {
+                // Redirect to login page if not logged in
+                window.location.href = 'login.html';
+                return false;
+            }
+            
+            // User is logged in, display user info in the header
+            await displayUserInfo();
+            return true;
+        } catch (error) {
+            console.error('Error checking login status:', error);
             window.location.href = 'login.html';
             return false;
         }
-        
-        // User is logged in, display user info in the header
-        displayUserInfo();
-        return true;
     }
 
-    function displayUserInfo() {
-        const user = JSON.parse(localStorage.getItem('user')) || {};
-        
-        // Create user info display and logout button if they don't exist
-        if (!document.querySelector('.user-info')) {
-            const header = document.querySelector('header');
+    async function displayUserInfo() {
+        try {
+            // Get user info from Appwrite
+            const user = await AuthService.getCurrentUser();
             
-            const userInfoDiv = document.createElement('div');
-            userInfoDiv.className = 'user-info';
-            
-            // Show user's name or email
-            const userName = user.name || user.email || 'User';
-            
-            userInfoDiv.innerHTML = `
-                <p>Welcome, ${userName} <button id="logout-btn" class="logout-btn">Logout</button></p>
-            `;
-            
-            header.appendChild(userInfoDiv);
-            
-            // Add logout button event listener
-            document.getElementById('logout-btn').addEventListener('click', handleLogout);
+            // Create user info display and logout button if they don't exist
+            if (!document.querySelector('.user-info')) {
+                const header = document.querySelector('header');
+                
+                const userInfoDiv = document.createElement('div');
+                userInfoDiv.className = 'user-info';
+                
+                // Show user's name or email
+                const userName = user.name || user.email || 'User';
+                
+                userInfoDiv.innerHTML = `
+                    <p>Welcome, ${userName} <button id="logout-btn" class="logout-btn">Logout</button></p>
+                `;
+                
+                header.appendChild(userInfoDiv);
+                
+                // Add logout button event listener
+                document.getElementById('logout-btn').addEventListener('click', handleLogout);
+            }
+        } catch (error) {
+            console.error('Error displaying user info:', error);
         }
     }
 
-    function handleLogout() {
-        // Clear login status
-        localStorage.removeItem('isLoggedIn');
-        
-        // Redirect to login page
-        window.location.href = 'login.html';
+    async function handleLogout() {
+        try {
+            // Logout from Appwrite
+            await AuthService.logout();
+            
+            // Redirect to login page
+            window.location.href = 'login.html';
+        } catch (error) {
+            console.error('Error logging out:', error);
+            alert('There was an error logging out. Please try again.');
+        }
     }
 
     function initialize() {

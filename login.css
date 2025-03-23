@@ -1,3 +1,141 @@
+/* Login Page Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f5f7fa;
+    height: 100vh;
+    color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-container {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.login-card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    padding: 40px 30px;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.logo-container {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.logo-container h1 {
+    color: #333;
+    font-size: 26px;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.tagline {
+    color: #666;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.welcome-section {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.welcome-section h2 {
+    font-size: 20px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.welcome-text {
+    color: #666;
+    font-size: 14px;
+}
+
+.google-signin-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 12px 20px;
+    border: 1px solid #ddd;
+    background-color: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.google-signin-btn:hover {
+    background-color: #f5f5f5;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+}
+
+.google-signin-btn svg {
+    margin-right: 12px;
+}
+
+.google-signin-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Error message styling */
+.error-message {
+    background-color: #ffebee;
+    color: #d32f2f;
+    padding: 10px 15px;
+    border-radius: 4px;
+    margin-top: 20px;
+    font-size: 14px;
+    display: none;
+    text-align: center;
+    border-left: 4px solid #d32f2f;
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.login-card {
+    animation: fadeIn 0.4s ease-out forwards;
+}
+
+@media (max-width: 480px) {
+    .login-container {
+        padding: 15px;
+    }
+    
+    .login-card {
+        padding: 30px 20px;
+    }
+    
+    .logo-container h1 {
+        font-size: 24px;
+    }
+}
+
 .login-section, .signup-section, .register-section {
     max-width: 500px;
     margin: 0 auto;
@@ -37,14 +175,6 @@
     margin-top: 10px;
 }
 
-.error-message {
-    color: #e74c3c;
-    font-size: 14px;
-    margin-top: 5px;
-    text-align: center;
-    display: none;
-}
-
 .success-message {
     color: #27ae60;
     font-size: 14px;
@@ -70,12 +200,64 @@ input[type="text"]:focus {
     display: none;
 }
 
-/* Animation for switching between login and signup */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
+/* Or divider styles */
+.or-divider {
+    text-align: center;
+    margin: 20px 0;
+    position: relative;
 }
 
-.login-section, .signup-section, .register-section {
-    animation: fadeIn 0.3s ease-in-out;
+.or-divider::before,
+.or-divider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 45%;
+    height: 1px;
+    background-color: #ddd;
+}
+
+.or-divider::before {
+    left: 0;
+}
+
+.or-divider::after {
+    right: 0;
+}
+
+.or-divider span {
+    display: inline-block;
+    background-color: #fff;
+    padding: 0 10px;
+    position: relative;
+    color: #888;
+    font-size: 14px;
+}
+
+/* Social login button styles */
+.social-login-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    background-color: white;
+    cursor: pointer;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    transition: background-color 0.3s;
+}
+
+.social-login-btn:hover {
+    background-color: #f5f5f5;
+}
+
+.social-login-btn svg {
+    margin-right: 10px;
+}
+
+.social-login-btn span {
+    font-size: 14px;
+    color: #333;
 } 

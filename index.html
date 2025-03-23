@@ -1,86 +1,119 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>UNFORGETTABLE</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
     <div class="container">
-        <header>
-            <h1>UNFORGETTABLE</h1>
-            <p>Never forget your essentials again</p>
-        </header>
+      <header>
+        <h1>UNFORGETTABLE</h1>
+        <p>Never forget your essentials again</p>
+      </header>
 
-        <section class="location-section">
-            <h2>Location</h2>
-            <div id="location-status">
-                <p>Location: Waiting for permission...</p>
-            </div>
-            
-            <form id="home-location-form">
-                <div class="form-group">
-                    <label for="location-input">Enter your home address or city, state:</label>
-                    <input type="text" id="location-input" placeholder="e.g. New York, NY" required>
-                </div>
-                <div class="location-buttons">
-                    <button type="submit" class="primary-btn">Save Location</button>
-                    <button type="button" id="use-current-location" class="secondary-btn">Use Current Location</button>
-                </div>
-            </form>
-            
-            <div class="location-displays">
-                <div id="home-location-display">
-                    <p>Home location: Not set</p>
-                </div>
-                <div id="current-location-display">
-                    <p>Current location: Waiting for GPS data...</p>
-                </div>
-                <div id="distance-from-home" style="display: none;">
-                    <p>Distance from home: Calculating...</p>
-                </div>
-            </div>
-        </section>
+      <section class="location-section">
+        <h2>Location</h2>
+        <div id="location-status">
+          <p>Location: Waiting for permission...</p>
+        </div>
 
-        <section class="weather-info">
-            <div id="current-weather">
-                <p>Loading weather data...</p>
-            </div>
-            <div id="weather-recommendations">
-                <!-- Weather-based recommendations will appear here -->
-            </div>
-        </section>
+        <form id="home-location-form">
+          <div class="form-group">
+            <label for="location-input"
+              >Enter your home address or city, state:</label
+            >
+            <input
+              type="text"
+              id="location-input"
+              placeholder="e.g. New York, NY"
+              required
+            />
+          </div>
+          <div class="location-buttons">
+            <button type="submit" class="primary-btn">Save Location</button>
+            <button
+              type="button"
+              id="use-current-location"
+              class="secondary-btn"
+            >
+              Use Current Location
+            </button>
+          </div>
+        </form>
 
-        <section class="add-item">
-            <h2>Add Item</h2>
-            <form id="add-item-form">
-                <div class="form-group">
-                    <label for="item-name">Item Name:</label>
-                    <input type="text" id="item-name" required>
-                </div>
-                <div class="form-group">
-                    <label for="condition">Remind me when:</label>
-                    <select id="condition" required>
-                        <option value="leaving-home">Leaving Home</option>
-                        <option value="rain">When it's Raining</option>
-                        <option value="hot">When it's Hot</option>
-                        <option value="cold">When it's Cold</option>
-                        <option value="always">Always</option>
-                    </select>
-                </div>
-                <button type="submit">Add to List</button>
-            </form>
-        </section>
+        <div class="location-displays">
+          <div id="home-location-display">
+            <p>Home location: Not set</p>
+          </div>
+          <div id="current-location-display">
+            <p>Current location: Waiting for GPS data...</p>
+          </div>
+          <div id="distance-from-home" style="display: none">
+            <p>Distance from home: Calculating...</p>
+          </div>
+        </div>
+      </section>
 
-        <section class="items-list">
-            <h2>Your Items</h2>
-            <ul id="reminders-list">
-                <!-- Items will be added here -->
-            </ul>
-        </section>
+      <section class="weather-info">
+        <div id="current-weather">
+          <p>Loading weather data...</p>
+        </div>
+        <div id="weather-recommendations">
+          <!-- Weather-based recommendations will appear here -->
+        </div>
+      </section>
+
+      <section class="add-item">
+        <h2>Add Item</h2>
+        <form id="add-item-form">
+          <div class="form-group">
+            <label for="item-name">Item Name:</label>
+            <input type="text" id="item-name" required />
+          </div>
+          <div class="form-group">
+            <label for="condition">Remind me when:</label>
+            <select id="condition" required>
+              <option value="leaving-home">Leaving Home</option>
+              <option value="rain">When it's Raining</option>
+              <option value="hot">When it's Hot</option>
+              <option value="cold">When it's Cold</option>
+              <option value="always">Always</option>
+            </select>
+          </div>
+          <button type="submit">Add to List</button>
+        </form>
+      </section>
+
+      <section class="items-list">
+        <h2>Your Items</h2>
+        <ul id="reminders-list">
+          <!-- Items will be added here -->
+        </ul>
+      </section>
+
+      <footer>
+        <div class="footer-content">
+          <div class="footer-links">
+            <a href="index.html">Home</a>
+            <a href="contact-us.html">Contact Us</a>
+          </div>
+          <div class="footer-copyright">
+            Open-sourced under MIT license @
+            <a href="https://github.com/KyleJKC/unforgettable" target="_blank"
+              >GitHub</a
+            >
+          </div>
+          <div class="footer-copyright">
+            Built by Alex Kang, Steve Sun, Kyle Jin
+          </div>
+        </div>
+      </footer>
     </div>
 
-    <script src="script.js"></script>
-</body>
-</html> 
+    <!-- Appwrite SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@17.0.0"></script>
+    <script type="module" src="script.js"></script>
+  </body>
+</html>

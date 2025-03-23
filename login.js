@@ -1,106 +1,59 @@
-document.addEventListener('DOMContentLoaded', () => {
+import AuthService from './appwrite.js';
+
+document.addEventListener('DOMContentLoaded', async () => {
     // DOM Elements
-    const loginForm = document.getElementById('login-form');
-    const signupForm = document.getElementById('signup-form');
-    const loginSection = document.querySelector('.login-section');
-    const signupSection = document.querySelector('.signup-section');
-    const signupLink = document.getElementById('signup-link');
-    const loginLink = document.getElementById('login-link');
-    const forgotPasswordLink = document.getElementById('forgot-password-link');
+    const googleLoginBtn = document.getElementById('google-login-btn');
 
     // Check if user is already logged in
-    const isLoggedIn = localStorage.getItem('isLoggedIn');
-    
-    if (isLoggedIn === 'true') {
-        window.location.href = 'index.html'; // Redirect to main app if already logged in
+    try {
+        const isLoggedIn = await AuthService.isLoggedIn();
+        
+        if (isLoggedIn) {
+            window.location.href = 'index.html'; // Redirect to main app if already logged in
+        }
+    } catch (error) {
+        console.error('Error checking login status:', error);
     }
 
-    // Event listeners for switching between login and signup
-    signupLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        window.location.href = 'registration.html'; // Redirect to dedicated registration page
-    });
-
-    if (loginLink) {
-        loginLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            signupSection.style.display = 'none';
-            loginSection.style.display = 'block';
-        });
-    }
-
-    forgotPasswordLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        alert('Password reset functionality will be implemented in the future.');
-    });
-
-    // Login form submission
-    loginForm.addEventListener('submit', (e) => {
+    // Google OAuth login
+    googleLoginBtn.addEventListener('click', async (e) => {
         e.preventDefault();
         
-        const email = document.getElementById('email').value.trim();
-        const password = document.getElementById('password').value.trim();
+        // Add loading state to button
+        googleLoginBtn.disabled = true;
+        googleLoginBtn.innerHTML = '<span>Connecting to Google...</span>';
         
-        // For now, just do a simple check 
-        // In a real app, this would validate against a backend
-        if (email && password) {
-            // Mock login success - store login state
-            localStorage.setItem('isLoggedIn', 'true');
-            localStorage.setItem('user', JSON.stringify({
-                email: email,
-                name: email.split('@')[0] // Just use part of email as name for now
-            }));
-            
-            // Redirect to main app
-            window.location.href = 'index.html';
-        } else {
-            showError(loginForm, 'Please enter both email and password.');
+        try {
+            // This will redirect to Google OAuth login
+            await AuthService.loginWithGoogle();
+            // User will be redirected to the success URL after login
+            // No need to handle redirect here
+        } catch (error) {
+            // Reset button state
+            googleLoginBtn.disabled = false;
+            googleLoginBtn.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18">
+                    <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/>
+                    <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
+                    <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/>
+                    <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/>
+                    <path fill="none" d="M0 0h18v18H0z"/>
+                </svg>
+                <span>Sign in with Google</span>
+            `;
+            showError(`Google login failed: ${error.message}`);
         }
     });
 
-    // Signup form submission (if present in this page)
-    if (signupForm) {
-        signupForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            const name = document.getElementById('signup-name').value.trim();
-            const email = document.getElementById('signup-email').value.trim();
-            const password = document.getElementById('signup-password').value.trim();
-            const confirmPassword = document.getElementById('signup-confirm-password').value.trim();
-            
-            // Simple validation
-            if (!name || !email || !password || !confirmPassword) {
-                showError(signupForm, 'Please fill in all fields.');
-                return;
-            }
-            
-            if (password !== confirmPassword) {
-                showError(signupForm, 'Passwords do not match.');
-                return;
-            }
-            
-            // Mock signup success - store user info
-            localStorage.setItem('isLoggedIn', 'true');
-            localStorage.setItem('user', JSON.stringify({
-                name: name,
-                email: email
-            }));
-            
-            // Redirect to main app
-            window.location.href = 'index.html';
-        });
-    }
-
     // Helper function to show error messages
-    function showError(form, message) {
-        // Check if error element already exists
-        let errorElement = form.querySelector('.error-message');
+    function showError(message) {
+        // Create error element if it doesn't exist
+        let errorElement = document.querySelector('.error-message');
         
         if (!errorElement) {
-            // Create error element if it doesn't exist
             errorElement = document.createElement('div');
             errorElement.className = 'error-message';
-            form.appendChild(errorElement);
+            document.querySelector('.login-card').appendChild(errorElement);
         }
         
         // Show the message
