@@ -1,5 +1,5 @@
 // Import Auth Service
-import AuthService from './appwrite.js';
+import { AuthService, ItemService, UserSettingsService } from './appwrite.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Check login status first
@@ -23,10 +23,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const homeLocationDisplay = document.getElementById('home-location-display');
 
     // App State
-    let items = JSON.parse(localStorage.getItem('reminder-items')) || [];
+    let items = [];
     let currentLocation = null;
     let currentLocationAddress = null;
-    let homeLocation = JSON.parse(localStorage.getItem('home-location')) || null;
+    let homeLocation = null;
     let currentWeather = null;
     let weatherCondition = '';
     let temperature = 0;
@@ -99,23 +99,36 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    function initialize() {
-        // Load saved items
-        renderItems();
-        
-        // Display saved home location if exists
-        if (homeLocation) {
-            homeLocationDisplay.innerHTML = `<p>Home location: ${homeLocation.displayName}</p>`;
+    async function initialize() {
+        try {
+            // Load saved items from Appwrite
+            const savedItems = await ItemService.getItems();
+            if (savedItems && savedItems.length > 0) {
+                items = savedItems;
+            }
+            
+            // Load home location from Appwrite
+            homeLocation = await UserSettingsService.getHomeLocation();
+            
+            // Render items and display home location
+            renderItems();
+            
+            // Display saved home location if exists
+            if (homeLocation) {
+                homeLocationDisplay.innerHTML = `<p>Home location: ${homeLocation.displayName}</p>`;
+            }
+            
+            // Request permissions and initialize services
+            requestNotificationPermission();
+            initializeGeolocation();
+            
+            // Set up event listeners
+            addItemForm.addEventListener('submit', handleAddItem);
+            homeLocationForm.addEventListener('submit', handleSetHomeLocation);
+            useCurrentLocationBtn.addEventListener('click', handleUseCurrentLocation);
+        } catch (error) {
+            console.error('Error initializing app:', error);
         }
-        
-        // Request permissions and initialize services
-        requestNotificationPermission();
-        initializeGeolocation();
-        
-        // Set up event listeners
-        addItemForm.addEventListener('submit', handleAddItem);
-        homeLocationForm.addEventListener('submit', handleSetHomeLocation);
-        useCurrentLocationBtn.addEventListener('click', handleUseCurrentLocation);
     }
 
     // Notification Permission
@@ -260,50 +273,51 @@ document.addEventListener('DOMContentLoaded', async () => {
         e.preventDefault();
         
         const locationName = locationInput.value.trim();
+        
         if (!locationName) {
+            alert('Please enter a location name');
             return;
         }
         
-        homeLocationDisplay.innerHTML = '<p>Home location: Searching...</p>';
-        
         try {
-            const coordinates = await geocodeLocation(locationName);
+            const locationData = await geocodeLocation(locationName);
             
-            if (coordinates) {
-                homeLocation = {
-                    latitude: coordinates.lat,
-                    longitude: coordinates.lon,
-                    displayName: coordinates.display_name
-                };
-                
-                // Save to localStorage
-                localStorage.setItem('home-location', JSON.stringify(homeLocation));
-                
-                // Update display
-                homeLocationDisplay.innerHTML = `<p>Home location: ${homeLocation.displayName}</p>`;
-                
-                // If we have current location, update distance
-                if (currentLocation) {
-                    updateDistanceFromHome();
-                }
-                
-                // Start watching location if we have permission
-                if (currentLocation) {
-                    watchLocation();
-                }
-                
-                // Update weather for new location
-                fetchWeather(homeLocation.latitude, homeLocation.longitude);
-            } else {
-                homeLocationDisplay.innerHTML = '<p>Home location: Could not find that location. Please try again.</p>';
+            if (!locationData) {
+                alert('Could not find this location. Please try a different search.');
+                return;
+            }
+            
+            const location = {
+                latitude: locationData.lat,
+                longitude: locationData.lon,
+                displayName: locationData.display_name
+            };
+            
+            // Save to Appwrite
+            await UserSettingsService.saveHomeLocation(location);
+            
+            // Update local state
+            homeLocation = location;
+            
+            // Display home location
+            homeLocationDisplay.innerHTML = `<p>Home location: ${location.displayName}</p>`;
+            
+            // Clear input
+            locationInput.value = '';
+            
+            // If we have current location, update distance
+            if (currentLocation) {
+                updateDistanceFromHome();
+            }
+            
+            // Start watching location if not already
+            if (!isWatchingLocation) {
+                watchLocation();
             }
         } catch (error) {
-            homeLocationDisplay.innerHTML = `<p>Home location: Error setting location (${error.message})</p>`;
-            console.error('Geocoding error:', error);
+            console.error('Error setting home location:', error);
+            alert('There was an error setting your home location. Please try again.');
         }
-        
-        // Reset form
-        locationInput.value = '';
     }
 
     function handleUseCurrentLocation() {
@@ -322,8 +336,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                         displayName: result.display_name
                     };
                     
-                    // Save to localStorage
-                    localStorage.setItem('home-location', JSON.stringify(homeLocation));
+                    // Save to Appwrite
+                    UserSettingsService.saveHomeLocation(homeLocation);
                     
                     // Update display
                     homeLocationDisplay.innerHTML = `<p>Home location: ${homeLocation.displayName}</p>`;
@@ -345,7 +359,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     displayName: `Latitude: ${currentLocation.latitude.toFixed(4)}, Longitude: ${currentLocation.longitude.toFixed(4)}`
                 };
                 
-                localStorage.setItem('home-location', JSON.stringify(homeLocation));
+                // Save to Appwrite
+                UserSettingsService.saveHomeLocation(homeLocation);
                 homeLocationDisplay.innerHTML = `<p>Home location: ${homeLocation.displayName}</p>`;
                 
                 // Update distance
@@ -487,58 +502,77 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Items Management
-    function handleAddItem(e) {
+    async function handleAddItem(e) {
         e.preventDefault();
         
-        const itemName = itemNameInput.value.trim();
+        const name = itemNameInput.value.trim();
         const condition = conditionSelect.value;
         
-        if (itemName) {
-            const newItem = {
-                id: Date.now().toString(),
-                name: itemName,
-                condition: condition
-            };
-            
-            items.push(newItem);
-            saveItems();
-            renderItems();
-            
-            // Reset form
-            itemNameInput.value = '';
-        }
-    }
-
-    function deleteItem(id) {
-        items = items.filter(item => item.id !== id);
-        saveItems();
-        renderItems();
-    }
-
-    function saveItems() {
-        localStorage.setItem('reminder-items', JSON.stringify(items));
-    }
-
-    function renderItems() {
-        remindersList.innerHTML = '';
-        
-        if (items.length === 0) {
-            remindersList.innerHTML = '<p>No items added yet</p>';
+        if (!name) {
+            alert('Please enter an item name');
             return;
         }
         
-        items.forEach(item => {
-            const li = document.createElement('li');
-            li.innerHTML = `
-                <span class="item-text">${item.name} (${getConditionText(item.condition)})</span>
-                <button class="delete-btn" data-id="${item.id}">Remove</button>
-            `;
-            remindersList.appendChild(li);
-        });
+        try {
+            // Create the item
+            const newItem = {
+                name,
+                condition
+            };
+            
+            // Save to Appwrite
+            const createdItem = await ItemService.createItem(newItem);
+            
+            // Add to local state (use the returned document from Appwrite)
+            items.push(createdItem);
+            
+            // Clear inputs
+            itemNameInput.value = '';
+            conditionSelect.value = 'rain';
+            
+            // Update UI
+            renderItems();
+        } catch (error) {
+            console.error('Error adding item:', error);
+            alert('There was an error adding your item. Please try again.');
+        }
+    }
+
+    async function deleteItem(id) {
+        try {
+            // Delete from Appwrite
+            await ItemService.deleteItem(id);
+            
+            // Remove from local state
+            items = items.filter(item => item.$id !== id);
+            
+            // Update UI
+            renderItems();
+        } catch (error) {
+            console.error('Error deleting item:', error);
+            alert('There was an error deleting the item. Please try again.');
+        }
+    }
+
+    function renderItems() {
+        if (!items.length) {
+            remindersList.innerHTML = '<li class="no-items">No items added yet</li>';
+            return;
+        }
+        
+        remindersList.innerHTML = items.map(item => `
+            <li>
+                <span>${item.name}</span>
+                <span class="condition">${getConditionText(item.condition)}</span>
+                <button class="delete-btn" data-id="${item.$id}">×</button>
+            </li>
+        `).join('');
         
         // Add event listeners to delete buttons
         document.querySelectorAll('.delete-btn').forEach(btn => {
-            btn.addEventListener('click', () => deleteItem(btn.dataset.id));
+            btn.addEventListener('click', (e) => {
+                deleteItem(e.target.dataset.id);
+            });
         });
     }
 

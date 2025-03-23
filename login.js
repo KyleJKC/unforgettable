@@ -1,4 +1,4 @@
-import AuthService from './appwrite.js';
+import { AuthService } from './appwrite.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     // DOM Elements
