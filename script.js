@@ -515,7 +515,7 @@ document.addEventListener('DOMContentLoaded', () => {
         items.forEach(item => {
             const li = document.createElement('li');
             li.innerHTML = `
-                <span>${item.name} (${getConditionText(item.condition)})</span>
+                <span class="item-text">${item.name} (${getConditionText(item.condition)})</span>
                 <button class="delete-btn" data-id="${item.id}">Remove</button>
             `;
             remindersList.appendChild(li);
