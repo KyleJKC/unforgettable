@@ -419,7 +419,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             // Using OpenWeatherMap API
             const apiKey = 'bf8a7ecd35def02b02f94cedb999a898'; // Replace with your OpenWeatherMap API key
-            const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=metric&appid=${apiKey}`);
+            const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=imperial&appid=${apiKey}`);
             
             if (!response.ok) {
                 throw new Error('Weather data not available');
@@ -435,7 +435,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Display current weather
             currentWeatherDiv.innerHTML = `
                 <h3>Current Weather</h3>
-                <p>${data.weather[0].description}, ${temperature}°C</p>
+                <p>${data.weather[0].description}, ${temperature}°F</p>
             `;
             
             // Generate weather-based recommendations
@@ -446,10 +446,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (error) {
             currentWeatherDiv.innerHTML = `<p>Weather data unavailable: ${error.message}</p>`;
             console.error('Weather fetch error:', error);
-            
-            // Use mock data for testing
-            weatherCondition = 'clear';
-            temperature = 20;
         }
     }
 
@@ -468,11 +464,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             recommendations.push('Warm jacket', 'Gloves', 'Scarf');
         }
         
-        if (temperature > 25) {
+        if (temperature > 77) {
             recommendations.push('Sunglasses', 'Sunscreen', 'Hat');
         }
         
-        if (temperature < 10) {
+        if (temperature < 50) {
             recommendations.push('Warm jacket', 'Gloves');
         }
         
