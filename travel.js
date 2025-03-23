@@ -1,139 +1,16 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Check login status first
-    if (!checkLoginStatus()) {
-        return; // Don't initialize if not logged in
-    }
-    
     // DOM Elements
     const destinationForm = document.getElementById('destination-form');
     const destinationInput = document.getElementById('destination-input');
     const tripDuration = document.getElementById('trip-duration');
-    const locationStatus = document.getElementById('location-status');
     const loadingSection = document.getElementById('loading-recommendations');
     const recommendationsContainer = document.getElementById('recommendations-container');
     const destinationName = document.getElementById('destination-name');
     const weatherInfo = document.getElementById('weather-info');
     const recommendationsList = document.getElementById('recommendations-list');
     
-    // Get current location
-    getCurrentLocation();
-    
     // Form submission handler
     destinationForm.addEventListener('submit', handleDestinationSubmit);
-    
-    // Function to check if user is logged in
-    function checkLoginStatus() {
-        const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-        
-        if (!isLoggedIn) {
-            // Redirect to login page if not logged in
-            window.location.href = 'login.html';
-            return false;
-        }
-        
-        // User is logged in, display user info in the header
-        displayUserInfo();
-        return true;
-    }
-    
-    // Function to display user info in header
-    function displayUserInfo() {
-        // Create user info display and logout button if they don't exist
-        if (!document.querySelector('.user-info')) {
-            const user = JSON.parse(localStorage.getItem('user')) || {};
-            const userName = user.name || user.email || 'User';
-            
-            const header = document.querySelector('header');
-            
-            const userInfoDiv = document.createElement('div');
-            userInfoDiv.className = 'user-info';
-            
-            userInfoDiv.innerHTML = `
-                <p>Welcome, ${userName} <button id="logout-btn" class="logout-btn">Logout</button></p>
-            `;
-            
-            header.appendChild(userInfoDiv);
-            
-            // Add logout button event listener
-            document.getElementById('logout-btn').addEventListener('click', () => {
-                localStorage.removeItem('isLoggedIn');
-                window.location.href = 'login.html';
-            });
-        }
-    }
-    
-    // Function to get current location
-    function getCurrentLocation() {
-        locationStatus.innerHTML = '<p>Your current location: Requesting access...</p>';
-        
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                position => {
-                    const { latitude, longitude } = position.coords;
-                    
-                    // Get location name from coordinates
-                    getLocationNameFromCoords(latitude, longitude)
-                        .then(locationName => {
-                            locationStatus.innerHTML = `<p>Your current location: ${locationName}</p>`;
-                        })
-                        .catch(error => {
-                            locationStatus.innerHTML = `<p>Current location: Found (${latitude.toFixed(4)}, ${longitude.toFixed(4)})</p>`;
-                            console.error('Error getting location name:', error);
-                        });
-                },
-                error => {
-                    let errorMessage = '';
-                    switch (error.code) {
-                        case error.PERMISSION_DENIED:
-                            errorMessage = 'Location access denied. Please enable location services.';
-                            break;
-                        case error.POSITION_UNAVAILABLE:
-                            errorMessage = 'Current location information is unavailable.';
-                            break;
-                        case error.TIMEOUT:
-                            errorMessage = 'Request to get location timed out.';
-                            break;
-                        default:
-                            errorMessage = 'An unknown error occurred.';
-                    }
-                    locationStatus.innerHTML = `<p>Your current location: ${errorMessage}</p>`;
-                }
-            );
-        } else {
-            locationStatus.innerHTML = '<p>Your current location: Geolocation is not supported by this browser.</p>';
-        }
-    }
-    
-    // Function to get location name from coordinates (using real API)
-    function getLocationNameFromCoords(latitude, longitude) {
-        return new Promise((resolve, reject) => {
-            // Using OpenStreetMap's Nominatim API (free, no API key required)
-            const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`;
-            
-            fetch(url)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Failed to fetch location data');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data && data.display_name) {
-                        // Format the display name to be more concise
-                        const addressParts = data.display_name.split(',');
-                        const shortenedAddress = addressParts.slice(0, 3).join(',');
-                        resolve(shortenedAddress);
-                    } else {
-                        resolve(`${latitude.toFixed(5)}, ${longitude.toFixed(5)}`);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching address:', error);
-                    // Fallback to coordinates if API fails
-                    resolve(`${latitude.toFixed(5)}, ${longitude.toFixed(5)}`);
-                });
-        });
-    }
     
     // Function to handle destination form submission
     function handleDestinationSubmit(e) {
@@ -181,6 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(error => {
                 console.error('Error:', error);
                 loadingSection.innerHTML = `<p>Error: ${error.message}. Please try again.</p>`;
+                
                 // If there's an error, get mock weather data as fallback
                 const mockWeatherData = getMockWeatherData(destination);
                 updateWeatherInfo(mockWeatherData);
@@ -274,6 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Weather-based recommendations
         switch (weatherData.condition) {
+            case 'clear':
             case 'sunny':
                 recommendations.push({
                     name: 'Sunscreen',
@@ -292,7 +171,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 break;
                 
-            case 'rainy':
+            case 'rain':
+            case 'drizzle':
+            case 'thunderstorm':
                 recommendations.push({
                     name: 'Umbrella',
                     reason: 'Stay dry in the rain',
@@ -310,6 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 break;
                 
+            case 'clouds':
             case 'cloudy':
                 recommendations.push({
                     name: 'Light jacket',
@@ -323,6 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 break;
                 
+            case 'snow':
             case 'snowy':
                 recommendations.push({
                     name: 'Winter coat',
@@ -345,24 +228,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     icon: '👢'
                 });
                 break;
-                
-            case 'hot':
-                recommendations.push({
-                    name: 'Water bottle',
-                    reason: 'Stay hydrated in hot weather',
-                    icon: '💧'
-                });
-                recommendations.push({
-                    name: 'Light clothing',
-                    reason: 'Stay cool in high temperatures',
-                    icon: '👕'
-                });
-                recommendations.push({
-                    name: 'Sunscreen',
-                    reason: 'Protect your skin from UV rays',
-                    icon: '☀️'
-                });
-                break;
+        }
+        
+        // Temperature-based recommendations
+        if (weatherData.temperature > 85) {
+            recommendations.push({
+                name: 'Water bottle',
+                reason: 'Stay hydrated in hot weather',
+                icon: '💧'
+            });
+            recommendations.push({
+                name: 'Light clothing',
+                reason: 'Stay cool in high temperatures',
+                icon: '👕'
+            });
+        } else if (weatherData.temperature < 50) {
+            recommendations.push({
+                name: 'Warm layers',
+                reason: 'Stay comfortable in cold weather',
+                icon: '🧶'
+            });
         }
         
         // Duration-based recommendations
@@ -422,16 +307,16 @@ document.addEventListener('DOMContentLoaded', () => {
         // This would be used as a fallback if the API call fails
         const weatherOptions = [
             { 
-                condition: 'sunny', 
+                condition: 'clear', 
                 temperature: 75, 
-                description: 'Sunny with clear skies',
+                description: 'Clear skies',
                 high: 80,
                 low: 65,
                 humidity: '45%',
                 wind: '5 mph'
             },
             { 
-                condition: 'rainy', 
+                condition: 'rain', 
                 temperature: 55, 
                 description: 'Light rain throughout the day',
                 high: 60,
@@ -440,7 +325,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 wind: '10 mph'
             },
             { 
-                condition: 'cloudy', 
+                condition: 'clouds', 
                 temperature: 65, 
                 description: 'Partly cloudy with occasional sun',
                 high: 70,
@@ -449,22 +334,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 wind: '8 mph'
             },
             { 
-                condition: 'snowy', 
+                condition: 'snow', 
                 temperature: 30, 
                 description: 'Light snow throughout the day',
                 high: 35,
                 low: 25,
                 humidity: '80%',
                 wind: '12 mph'
-            },
-            { 
-                condition: 'hot', 
-                temperature: 90, 
-                description: 'Hot and humid',
-                high: 95,
-                low: 75,
-                humidity: '70%',
-                wind: '3 mph'
             }
         ];
         

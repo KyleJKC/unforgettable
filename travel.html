@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>UNFORGETTABLE - What Do You Need?</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>UNFORGETTABLE</h1>
+        <p>Never forget your essentials again</p>
+        <nav class="header-nav">
+          <a href="index.html">Home</a>
+          <a href="travel.html" class="active">Travel</a>
+        </nav>
+      </header>
+
+      <section class="travel-section">
+        <h2>What Do You Need?</h2>
+        <p class="travel-intro">
+          When you want to travel to a different city, enter your destination
+          below and we'll suggest what to bring.
+        </p>
+        <br/>
+        <form id="destination-form">
+          <div class="form-group">
+            <label for="destination-input">Enter your destination city:</label>
+            <input
+              type="text"
+              id="destination-input"
+              placeholder="e.g. San Francisco, CA"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="trip-duration">Trip duration:</label>
+            <select id="trip-duration">
+              <option value="day">Day trip</option>
+              <option value="weekend">Weekend trip</option>
+              <option value="week">Week-long trip</option>
+              <option value="long">Longer trip</option>
+            </select>
+          </div>
+          <button type="submit" class="primary-btn">Get Recommendations</button>
+        </form>
+
+        <div
+          id="loading-recommendations"
+          style="display: none"
+          class="loading-section"
+        >
+          <p>Finding recommendations for your trip...</p>
+        </div>
+
+        <div id="recommendations-container" style="display: none">
+          <h3>
+            Recommended Items for <span id="destination-name">your trip</span>
+          </h3>
+          <div id="weather-info" class="weather-info-travel">
+            <p>Weather information will appear here</p>
+          </div>
+          <div id="recommendations-list" class="recommendations-list">
+            <!-- Recommendations will be loaded here -->
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        <div class="footer-content">
+          <div class="footer-links">
+            <a href="index.html">Home</a>
+            <a href="contact-us.html">Contact Us</a>
+            <a href="travel.html">Travel</a>
+          </div>
+          <div class="footer-copyright">
+            Open-sourced under MIT license @
+            <a href="https://github.com/KyleJKC/unforgettable" target="_blank"
+              >GitHub</a
+            >
+          </div>
+          <div class="footer-copyright">
+            Built by Alex Kang, Steve Sun, Kyle Jin
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script src="travel.js"></script>
+  </body>
+</html>

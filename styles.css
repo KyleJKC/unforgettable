@@ -294,4 +294,30 @@ footer {
     .footer-links a {
         margin: 0;
     }
+}
+
+.header-nav {
+    margin-top: 15px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.header-nav a {
+    color: #3498db;
+    text-decoration: none;
+    font-size: 16px;
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.header-nav a:hover {
+    background-color: #f0f9ff;
+}
+
+.header-nav a.active {
+    color: #2c3e50;
+    font-weight: bold;
+    border-bottom: 2px solid #3498db;
 } 
