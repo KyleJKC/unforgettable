@@ -1,6 +1,19 @@
 // Import Auth Service
 import { AuthService, ItemService, UserSettingsService } from './appwrite.js';
 
+// Utility Functions
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     // Check login status first
     if (!await checkLoginStatus()) {
@@ -147,6 +160,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         if ('geolocation' in navigator) {
             locationStatusDiv.innerHTML = '<p>Location: Requesting access...</p>';
             
+            const options = {
+                timeout: 10000,
+                maximumAge: 60000,
+                enableHighAccuracy: true
+            };
+            
             navigator.geolocation.getCurrentPosition(
                 position => {
                     currentLocation = {
@@ -167,15 +186,37 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                 },
                 error => {
-                    locationStatusDiv.innerHTML = `<p>Location: ${error.message}</p>`;
-                    currentLocationDisplayDiv.innerHTML = `<p>Current location: Unable to access (${error.message})</p>`;
-                    console.error('Geolocation error:', error);
-                }
+                    handleGeolocationError(error);
+                },
+                options
             );
         } else {
             locationStatusDiv.innerHTML = '<p>Location: Geolocation not supported by your browser</p>';
             currentLocationDisplayDiv.innerHTML = '<p>Current location: Geolocation not supported by your browser</p>';
         }
+    }
+    
+    function handleGeolocationError(error) {
+        let errorMessage = '';
+        
+        switch(error.code) {
+            case error.PERMISSION_DENIED:
+                errorMessage = 'User denied the request for geolocation';
+                break;
+            case error.POSITION_UNAVAILABLE:
+                errorMessage = 'Location information is unavailable';
+                break;
+            case error.TIMEOUT:
+                errorMessage = 'The request to get user location timed out';
+                break;
+            case error.UNKNOWN_ERROR:
+                errorMessage = 'An unknown error occurred';
+                break;
+        }
+        
+        locationStatusDiv.innerHTML = `<p>Location: ${errorMessage}</p>`;
+        currentLocationDisplayDiv.innerHTML = `<p>Current location: Unable to access (${errorMessage})</p>`;
+        console.error('Geolocation error:', error);
     }
 
     function updateCurrentLocationDisplay() {
@@ -232,7 +273,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         isWatchingLocation = true;
         
-        navigator.geolocation.watchPosition(position => {
+        // Create debounced handlers
+        const debouncedLocationUpdate = debounce((position) => {
             // Update current location
             currentLocation = {
                 latitude: position.coords.latitude,
@@ -243,28 +285,38 @@ document.addEventListener('DOMContentLoaded', async () => {
             updateCurrentLocationDisplay();
             
             // Calculate distance from home
-            distanceFromHome = calculateDistance(
-                homeLocation.latitude, 
-                homeLocation.longitude,
-                currentLocation.latitude,
-                currentLocation.longitude
-            );
-            
-            // Update distance display
-            updateDistanceFromHome();
-            
-            // If moved significantly from home (100 meters), trigger "leaving home" condition
-            if (distanceFromHome > 0.1) {
-                checkAndNotify('leaving-home');
+            if (homeLocation) {
+                distanceFromHome = calculateDistance(
+                    homeLocation.latitude, 
+                    homeLocation.longitude,
+                    currentLocation.latitude,
+                    currentLocation.longitude
+                );
+                
+                // If user moves out of home area (100 meters or more)
+                if (distanceFromHome >= 0.1) {
+                    checkAndNotify('leaving-home');
+                }
             }
-        }, 
-        error => {
-            console.error('Location watching error:', error);
-        }, 
-        {
-            enableHighAccuracy: true,
-            maximumAge: 30000,
-            timeout: 27000
+        }, 3000); // Debounce for 3 seconds
+        
+        // Set up watch with error handling
+        const watchId = navigator.geolocation.watchPosition(
+            debouncedLocationUpdate,
+            (error) => {
+                console.error('Location watch error:', error);
+                isWatchingLocation = false;
+            },
+            {
+                enableHighAccuracy: true,
+                maximumAge: 30000,
+                timeout: 27000
+            }
+        );
+        
+        // Store watchId for later cleanup
+        window.addEventListener('beforeunload', () => {
+            navigator.geolocation.clearWatch(watchId);
         });
     }
 
@@ -399,21 +451,43 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Reverse Geocoding (Coordinates to address)
     async function reverseGeocode(latitude, longitude) {
-        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`);
-        
-        if (!response.ok) {
-            throw new Error('Reverse geocoding service unavailable');
+        try {
+            // Add cache to reduce API calls
+            const cacheKey = `geocode_${latitude.toFixed(5)}_${longitude.toFixed(5)}`;
+            const cachedResult = sessionStorage.getItem(cacheKey);
+            
+            if (cachedResult) {
+                return JSON.parse(cachedResult);
+            }
+            
+            // Create AbortController for timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+            
+            const response = await fetch(
+                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`,
+                {
+                    headers: { 'User-Agent': 'Unforgettable App' },
+                    signal: controller.signal
+                }
+            );
+            
+            clearTimeout(timeoutId);
+            
+            if (!response.ok) {
+                throw new Error(`Geocoding API error: ${response.status} ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            
+            // Cache the result
+            sessionStorage.setItem(cacheKey, JSON.stringify(data));
+            
+            return data;
+        } catch (error) {
+            console.error('Reverse geocoding error:', error);
+            return null;
         }
-        
-        const data = await response.json();
-        
-        if (data && data.display_name) {
-            return {
-                display_name: data.display_name
-            };
-        }
-        
-        return null;
     }
 
     // Calculate distance between two coordinates in kilometers
@@ -432,35 +506,60 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Weather API
     async function fetchWeather(latitude, longitude) {
         try {
-            // Using OpenWeatherMap API
-            const apiKey = 'bf8a7ecd35def02b02f94cedb999a898'; // Replace with your OpenWeatherMap API key
-            const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=imperial&appid=${apiKey}`);
+            const weatherApiKey = 'bf8a7ecd35def02b02f94cedb999a898'; // Free API key
+            const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=imperial&appid=${weatherApiKey}`;
+            
+            // Add a timeout to the fetch request
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+            
+            const response = await fetch(weatherUrl, { signal: controller.signal });
+            clearTimeout(timeoutId); // Clear the timeout if successful
             
             if (!response.ok) {
-                throw new Error('Weather data not available');
+                throw new Error(`Weather API error: ${response.status} ${response.statusText}`);
             }
             
             const data = await response.json();
-            currentWeather = data;
             
-            // Update weather state
+            // Update the app state with weather data
             weatherCondition = data.weather[0].main.toLowerCase();
             temperature = data.main.temp;
             
-            // Display current weather
+            // Display current weather information
             currentWeatherDiv.innerHTML = `
                 <h3>Current Weather</h3>
-                <p>${data.weather[0].description}, ${temperature}°F</p>
+                <p><strong>Condition:</strong> ${data.weather[0].description}</p>
+                <p><strong>Temperature:</strong> ${Math.round(temperature)}°F</p>
+                <p><strong>Humidity:</strong> ${data.main.humidity}%</p>
+                <p><strong>Wind:</strong> ${Math.round(data.wind.speed)} mph</p>
             `;
             
-            // Generate weather-based recommendations
+            // Generate and display weather-specific recommendations
             generateWeatherRecommendations();
             
-            // Check weather-dependent reminders
+            // Check if current conditions match any item conditions
             checkWeatherConditions();
+            
+            return data;
         } catch (error) {
-            currentWeatherDiv.innerHTML = `<p>Weather data unavailable: ${error.message}</p>`;
-            console.error('Weather fetch error:', error);
+            console.error('Weather API error:', error);
+            
+            // Display error message
+            currentWeatherDiv.innerHTML = `
+                <h3>Weather Information</h3>
+                <p>Unable to fetch current weather data (${error.message})</p>
+                <p>Using default weather values</p>
+            `;
+            
+            // Use default values
+            weatherCondition = 'clear';
+            temperature = 70;
+            
+            // Still generate basic recommendations
+            generateWeatherRecommendations();
+            
+            return null;
         }
     }
 

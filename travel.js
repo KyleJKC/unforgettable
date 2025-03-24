@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 
                 // Update destination name
-                destinationName.textContent = destination;
+                destinationName.textContent = coords.displayName;
                 
                 // Get real weather data for the destination
                 return getWeatherData(coords.latitude, coords.longitude);
@@ -79,10 +79,20 @@ document.addEventListener('DOMContentLoaded', () => {
         // Use OpenStreetMap Nominatim API for geocoding
         const geocodeUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cityName)}&limit=1`;
         
-        return fetch(geocodeUrl)
+        // Add a timeout to the fetch request
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+        
+        return fetch(geocodeUrl, {
+            headers: { 'User-Agent': 'Unforgettable Travel App' },
+            signal: controller.signal
+        })
             .then(response => {
+                // Clear the timeout if the request is successful
+                clearTimeout(timeoutId);
+                
                 if (!response.ok) {
-                    throw new Error('Geocoding failed');
+                    throw new Error(`Geocoding error: ${response.status} ${response.statusText}`);
                 }
                 return response.json();
             })
@@ -90,10 +100,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data && data.length > 0) {
                     return {
                         latitude: parseFloat(data[0].lat),
-                        longitude: parseFloat(data[0].lon)
+                        longitude: parseFloat(data[0].lon),
+                        displayName: data[0].display_name
                     };
                 }
-                return null;
+                throw new Error('Location not found. Please try a different city name.');
+            })
+            .catch(error => {
+                console.error('Geocoding error:', error);
+                throw error; // Rethrow to be handled by the caller
             });
     }
     
@@ -103,10 +118,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const weatherApiKey = 'bf8a7ecd35def02b02f94cedb999a898'; // OpenWeatherMap free API key
         const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=imperial&appid=${weatherApiKey}`;
         
-        return fetch(weatherUrl)
+        // Add a timeout to the fetch request
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+        
+        return fetch(weatherUrl, { signal: controller.signal })
             .then(response => {
+                // Clear the timeout if the request is successful
+                clearTimeout(timeoutId);
+                
                 if (!response.ok) {
-                    throw new Error('Weather API request failed');
+                    throw new Error(`Weather API error: ${response.status} ${response.statusText}`);
                 }
                 return response.json();
             })
@@ -121,6 +143,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     humidity: `${data.main.humidity}%`,
                     wind: `${Math.round(data.wind.speed)} mph`
                 };
+            })
+            .catch(error => {
+                console.error('Weather API error:', error);
+                throw error; // Rethrow to be handled by the caller
             });
     }
     
@@ -193,7 +219,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     reason: 'Keep your feet dry',
                     icon: '👟'
                 });
-                break;
                 break;
             case 'drizzle':
             case 'thunderstorm':
