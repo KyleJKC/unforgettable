@@ -1,63 +1,29 @@
-# Don't Forget App
+# UNFORGETTABLE
 
-A simple web application that helps you remember items before leaving home, based on weather conditions and location changes.
+## Inspiration  
+One of our teammates is notoriously forgetful—he often realizes he’s left his wallet at home only after arriving at the airport. We wanted to create something that helps people like him remember important items before it’s too late.
 
-## Features
+## What It Does  
+**Unforgettable** is a smart web application that helps you remember essential items before leaving home, using location awareness and weather-based suggestions.
 
-- Add items to your reminder list
-- Set reminder conditions (leaving home, weather conditions)
-- Set your home location by address or current location
-- Get weather-based recommendations (umbrella for rain, sunglasses for hot days)
-- Receive notifications when reminder conditions are met
-- Local storage to save your items between sessions
+After signing in with Google, users can set any U.S. location as their “home,” track their current location, and view the distance between the two. Users can add personalized reminder items—like *wallet*, *keys*, or *headphones*—and set conditions for when reminders should trigger (e.g., “when leaving home”). If you leave without something important, these items will be shown on the home page.
 
-## Setup
+Traveling somewhere new? The app also includes a travel feature that allows users to add global destinations. Based on the location and weather, the app generates a **personalized checklist** to help you pack accordingly—whether it’s rain gear, sunscreen, or winter clothes.
 
-1. Clone or download this repository
-2. Get an API key from [OpenWeatherMap](https://openweathermap.org/api)
-3. Edit the `script.js` file and replace `YOUR_API_KEY` with your actual API key
-4. Open `index.html` in a browser
+## How We Built It  
+The app was developed using **HTML, CSS, and JavaScript**, with backend services powered by **Appwrite** for storing user data and managing authentication. We integrated geolocation APIs to track movement and location-based triggers.
 
-## Browser Permissions
+## Challenges We Ran Into  
+As we added more features, managing the UI with plain JavaScript became increasingly difficult and buggy. The process of hooking up the backend with our frontend is especially tedious and led to many bugs. We tried to fix most of them but maybe some of them are left unfixed due to limited time. In hindsight, using a framework like React from the beginning would have saved us time and effort—but by the time we realized it, we had already built too much to switch.
 
-The app requires the following permissions:
+## Accomplishments We’re Proud Of  
+We’re proud of how practical and versatile this project is. It solves a real-world problem in a simple, intuitive way, and has the potential to grow into something many people would find useful. We’re excited about what it can become beyond the hackathon.
 
-- **Geolocation**: To detect when you're leaving home and get local weather
-- **Notifications**: To send reminders when conditions are met
+## What We Learned  
+We discovered how rewarding (and sometimes frustrating) web development can be. We learned a lot about DOM manipulation, geolocation, user authentication, and how to think through UX from a real user’s perspective.
 
-## Usage
-
-1. Allow location and notification permissions when prompted
-2. Set your home location either by entering an address/city or using your current location
-3. Add items you often forget with their reminder conditions
-4. The app will automatically notify you when conditions are met
-
-### Setting Home Location
-
-You can set your home location in two ways:
-- Enter an address, city, or place name in the United States
-- Use the "Use Current Location" button to set your current coordinates as home
-
-The app will use this location to:
-- Determine when you're leaving home
-- Fetch weather data for your location
-- Base reminder triggers on this location
-
-## Technical Details
-
-- Built with vanilla HTML, CSS, and JavaScript
-- Uses the Geolocation API to track location changes
-- Uses the Notification API for reminders
-- Uses OpenWeatherMap API for weather data
-- Uses OpenStreetMap Nominatim API for geocoding
-- Stores data in localStorage
-
-## Limitations
-
-- The app needs to be running in the browser to work
-- Location tracking only works when the browser is open
-- Weather data requires an internet connection
-- Geocoding is limited to locations in the United States
+## What’s Next for Unforgettable  
+We plan to keep improving Unforgettable—starting with bug fixes and possibly migrating to a more robust frontend framework (i.e. React). We'd also love to incorporate some AI features in, such as **actually smart** suggestions. Ultimately, we’d love to launch it publicly and help more people leave home *with everything they need.*
 
 ## License
 

@@ -45,6 +45,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     let temperature = 0;
     let isWatchingLocation = false;
     let distanceFromHome = 0;
+    // Add tracking variables to prevent notification flickering
+    let leavingHomeStatus = false;
+    let lastNotificationTime = {
+        'leaving-home': 0,
+        'rain': 0,
+        'hot': 0,
+        'cold': 0,
+        'always': 0
+    };
+    let notificationCooldown = 30000; // Reduced to 30 seconds between notifications
 
     // Initialize
     initialize();
@@ -259,10 +269,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Display distance from home
         distanceFromHomeDiv.style.display = 'block';
         
-        if (distanceFromHome < 0.1) {
-            distanceFromHomeDiv.innerHTML = `<p>Distance from home: You are at home (${(distanceFromHome * 1000).toFixed(0)} meters)</p>`;
+        if (distanceFromHome < 0.062) {
+            distanceFromHomeDiv.innerHTML = `<p>Distance from home: You are at home (${(distanceFromHome * 5280).toFixed(0)} feet)</p>`;
         } else {
-            distanceFromHomeDiv.innerHTML = `<p>Distance from home: ${distanceFromHome.toFixed(2)} km</p>`;
+            distanceFromHomeDiv.innerHTML = `<p>Distance from home: ${distanceFromHome.toFixed(2)} miles</p>`;
         }
     }
 
@@ -490,9 +500,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Calculate distance between two coordinates in kilometers
+    // Calculate distance between two coordinates in miles
     function calculateDistance(lat1, lon1, lat2, lon2) {
-        const R = 6371; // Earth's radius in km
+        const R = 3959; // Earth's radius in miles
         const dLat = (lat2 - lat1) * Math.PI / 180;
         const dLon = (lon2 - lon1) * Math.PI / 180;
         const a = 
@@ -693,11 +703,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             checkAndNotify('rain');
         }
         
-        if (temperature > 25) {
+        if (temperature > 77) {
             checkAndNotify('hot');
         }
         
-        if (temperature < 10) {
+        if (temperature < 50) {
             checkAndNotify('cold');
         }
         
@@ -709,27 +719,57 @@ document.addEventListener('DOMContentLoaded', async () => {
         const matchingItems = items.filter(item => item.condition === condition);
         
         if (matchingItems.length > 0) {
-            const itemNames = matchingItems.map(item => item.name).join(', ');
+            const currentTime = Date.now();
+            console.log(`Checking ${condition} notification: Last notified ${(currentTime - lastNotificationTime[condition])/1000}s ago`);
             
-            // Send notification
-            sendNotification('Don\'t Forget!', `Remember to take: ${itemNames}`);
-            
-            // Also show in-app alert for browsers without notification support
-            displayInAppReminder(condition, matchingItems);
+            // Check if enough time has passed since the last notification of this type
+            if (currentTime - lastNotificationTime[condition] > notificationCooldown) {
+                const itemNames = matchingItems.map(item => item.name).join(', ');
+                console.log(`Sending notification for: ${condition} - Items: ${itemNames}`);
+                
+                // Send notification
+                sendNotification('Don\'t Forget!', `Remember to take: ${itemNames}`);
+                
+                // Also show in-app alert for browsers without notification support
+                displayInAppReminder(condition, matchingItems);
+                
+                // Update the last notification time for this condition
+                lastNotificationTime[condition] = currentTime;
+            }
         }
     }
 
     function sendNotification(title, body) {
-        if ('Notification' in window && Notification.permission === 'granted') {
-            new Notification(title, { body });
+        if ('Notification' in window) {
+            if (Notification.permission === 'granted') {
+                console.log(`Browser notification sent: ${title} - ${body}`);
+                new Notification(title, { body });
+            } else if (Notification.permission !== 'denied') {
+                // Request permission again if not explicitly denied
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        console.log(`Browser notification sent (after permission): ${title} - ${body}`);
+                        new Notification(title, { body });
+                    }
+                });
+            }
         }
     }
 
     function displayInAppReminder(condition, items) {
         let conditionText = getConditionText(condition);
         
+        // Remove any existing reminder with the same condition
+        const existingReminders = document.querySelectorAll('.recommendation-item[data-condition]');
+        existingReminders.forEach(reminder => {
+            if (reminder.getAttribute('data-condition') === condition) {
+                reminder.remove();
+            }
+        });
+        
         const reminderDiv = document.createElement('div');
         reminderDiv.classList.add('recommendation-item');
+        reminderDiv.setAttribute('data-condition', condition); // Add attribute for identification
         reminderDiv.style.backgroundColor = '#ffe6e6';
         reminderDiv.style.borderLeft = '4px solid #e74c3c';
         
@@ -745,9 +785,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             weatherRecommendationsDiv.appendChild(reminderDiv);
         }
         
-        // Remove after 10 seconds
+        // Remove after a longer time period for better visibility
         setTimeout(() => {
-            reminderDiv.remove();
-        }, 10000);
+            if (reminderDiv.parentNode) {
+                reminderDiv.remove();
+            }
+        }, 30000); // Increased to 30 seconds for better visibility
     }
 }); 
